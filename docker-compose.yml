@@ -1,0 +1,30 @@
+version: "3"
+services:
+  mysql:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    container_name: "mysql"
+    volumes:
+      - "./mysql/init:/docker-entrypoint-initdb.d"
+      - "./mysql/data:/var/lib/mysql"
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+  adminer:
+    image: adminer:latest
+    container_name: "adminer"
+    restart: always
+    ports:
+      - "8080:8080"
+  node:
+    ports:
+      - "3000:3000"
+    volumes:
+      - "./app:/mnt"
+    container_name: "node"
+    build: 
+      context: .
+      dockerfile: ./node/Dockerfile
+      args:
+        - "http_proxy"
+        - "https_proxy"
