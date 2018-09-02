@@ -5,16 +5,14 @@ import * as Module from './module';
 
 function mapStateToProps(state: Module.ICounterState): IStateProps {
   return {
-    loadingCount: state.loadingCount,
+    loading: state.loading,
     num: state.num,
   };
 }
 
 function mapDispatchToProps(dispatch: Dispatch<Action>): IDispatchProps {
   return {
-    onDecrement: (num: number) => dispatch(Module.decrement(num)),
     onDecrementAsync: (num: number) => dispatch(Module.decrementAsync(num)),
-    onIncrement: (num: number) => dispatch(Module.increment(num)),
     onIncrementAsync: (num: number) => dispatch(Module.incrementAsync(num)),
   };
 }

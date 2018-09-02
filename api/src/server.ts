@@ -43,14 +43,16 @@ async function loanDb(updateCounterFunc: (c : Counter) => void) {
 function error(reason: string) : IJson {
   return { reason, code: 500, count: undefined };
 }
+
 /**
- * increment の場合の処理。
+ * パラメーターから変化量（val）を取得し、DBを行進する。
  * @param req リクエスト
  * @param res レスポンス
  * @param sign +の値の場合は増加、-の値の場合は減少
  */
 async function process(req: Express.Request, res: Express.Response, sign: number) {
   const num = parseInt(req.params.val, 10);
+  res.setHeader('Access-Control-Allow-Origin', '*');
   return Number.isNaN(num)
     ? res.json(error('val is NaN.'))
     : res.json(await loanDb(c => c.count = c.count + num * sign));
