@@ -33,6 +33,7 @@ services:
       args:
         - "http_proxy"
         - "https_proxy"
+    env_file: .env
   nodeapi:
     ports:
       - "4000:3000"
@@ -46,4 +47,4 @@ services:
         - "http_proxy"
         - "https_proxy"
     command: /sbin/init -D
-
+    env_file: .env

@@ -1,47 +1,22 @@
 import 'reflect-metadata';
-import { ConnectionOptions, createConnection, Repository } from 'typeorm';
-import { Counter } from './entity/counter';
 import * as Express from 'express';
+import * as Log4js from 'log4js';
+import { error, getCountFromDb, initdb, loanDb } from './db';
 
-/** counter テーブルのレポジトリ */
-let repository : Repository<Counter>;
+type Request  = Express.Request;
+type Response = Express.Response;
 
-/**
- * APIのレスポンスをあらわすインターフェイス
- */
-interface IJson {
-  /** 結果コード */
-  code: number;
-  /** 更新後の counter レコード。または undefined */
-  count: number | undefined;
-  /** エラー時の原因 */
-  reason: string | undefined;
-}
+Log4js.configure('log4js.json');
+
+//  logger
+const logger = Log4js.getLogger();
 
 /**
- * Loan パターンを用いて、counter テーブルの読み込みと行進を行う処理を行う。
- * @param updateCounterFunc counter　レコードの値を更新するためのラムダ式
+ * CORS 対策用のヘッダをセット
+ * @param res レスポンス
  */
-async function loanDb(updateCounterFunc: (c : Counter) => void) {
-  const counter = await repository.findOne({ id: 1 });
-  let json : IJson;
-  if (counter !== undefined) {
-    updateCounterFunc(counter);
-    const result = await repository.save(counter);
-    json = { code: 0,  count: result.count, reason: undefined };
-  } else {
-    json = error('It failed to get record.');
-  }
-  console.log(json);
-  return json;
-}
-
-/**
- * エラー時の IJson のインスタンスを返す。
- * @param reason エラーの理由
- */
-function error(reason: string) : IJson {
-  return { reason, code: 500, count: undefined };
+function cors(res: Response) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
 }
 
 /**
@@ -50,36 +25,32 @@ function error(reason: string) : IJson {
  * @param res レスポンス
  * @param sign +の値の場合は増加、-の値の場合は減少
  */
-async function process(req: Express.Request, res: Express.Response, sign: number) {
+async function changeCount(req: Request, res: Response, sign: number): Promise<Response> {
+  cors(res);
   const num = parseInt(req.params.val, 10);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  return Number.isNaN(num)
-    ? res.json(error('val is NaN.'))
-    : res.json(await loanDb(c => c.count = c.count + num * sign));
+  const result = Number.isNaN(num)
+    ? error('val is NaN.')
+    : await loanDb(c => c.count = c.count + num * sign);
+  logger.info(`count: ${result.count}`);
+  return res.json(result);
+}
+
+/**
+ * DBから count を取得
+ * @param res response
+ */
+async function getCurrentCount(res: Response): Promise<Response> {
+  cors(res);
+  const result = await getCountFromDb();
+  logger.info(`count: ${result.count}`);
+  return res.json(result);
 }
 
 //  Express でエントリポイントを作成する。
 const app = Express();
-app.get('/increment/:val', (req: Express.Request, res: Express.Response) => process(req, res, +1));
-app.get('/decrement/:val', (req: Express.Request, res: Express.Response) => process(req, res, -1));
+app.get('/increment/:val', (req: Request, res: Response) => changeCount(req, res, +1));
+app.get('/decrement/:val', (req: Request, res: Response) => changeCount(req, res, -1));
+app.get('/current_count',  (req: Request, res: Response) => getCurrentCount(res));
 
-//  DBへの接続情報
-const options: ConnectionOptions = {
-  type: 'mysql',
-  host: 'mysql',
-  port: 3306,
-  username: 'counter_user',
-  password: 'counter_userpass',
-  database: 'counter_db',
-  synchronize: false,
-  entities: [Counter],
-  logging: true,
-};
-
-//  DBへのConnectionを取得し、Webサーバを起動するので。
-createConnection(options)
-  .then(async (connection) => {
-    repository = connection.getRepository(Counter);
-    app.listen(3000, () => console.log('Example app listening on port 3000!'));
-  })
-  .catch(error => console.log(error));
+//  DBを初期化し、Webサーバを起動。
+initdb(() => app.listen(3000, () => logger.info('Example app listening on port 3000!')));

@@ -9,5 +9,5 @@ CREATE TABLE counter_db.counter (
 
 INSERT INTO counter_db.counter (count) VALUES (0);
 
-CREATE USER 'counter_user'@'nodeapi.counter-express-mysql_default' IDENTIFIED BY 'counter_userpass';
-GRANT SELECT, UPDATE on counter_db.* TO 'counter_user'@'nodeapi.counter-express-mysql_default';
+CREATE USER 'counter_user'@'nodeapi.%' IDENTIFIED BY 'counter_userpass';
+GRANT SELECT, UPDATE on counter_db.* TO 'counter_user'@'nodeapi.%';
