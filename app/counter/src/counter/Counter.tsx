@@ -20,8 +20,8 @@ const Counter = (props: IStateProps & IDispatchProps) => {
         <div>
           <p>{props.loading ? 'Loading...' :  ''}</p>
           <p>{`count: ${props.num}`}</p>
-          <RaisedButton label="Increment 3 Async" onClick={onIncrementAsync} />
-          <RaisedButton label="Increment 3 Async" onClick={onDecrementAsync} />
+          <RaisedButton label="Increment 3 Async" disabled={props.loading} onClick={onIncrementAsync} />
+          <RaisedButton label="Increment 3 Async" disabled={props.loading} onClick={onDecrementAsync} />
         </div>
       );
 };

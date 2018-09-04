@@ -18,6 +18,8 @@ describe('Counter', () => {
     const wrapper = shallow(<Counter {...props} />)
     expect(wrapper.find('p').at(0).prop('children')).toBe('');
     expect(wrapper.find('p').at(1).prop('children')).toBe('count: 123');
+    expect(wrapper.find('RaisedButton').at(0).prop('disabled')).toBe(false);
+    expect(wrapper.find('RaisedButton').at(1).prop('disabled')).toBe(false);
   });
 
   it('rendering in loadding...', () => {
@@ -30,6 +32,8 @@ describe('Counter', () => {
     const wrapper = shallow(<Counter {...props} />)
     expect(wrapper.find('p').at(0).prop('children')).toBe('Loading...');
     expect(wrapper.find('p').at(1).prop('children')).toBe('count: 234');
+    expect(wrapper.find('RaisedButton').at(0).prop('disabled')).toBe(true);
+    expect(wrapper.find('RaisedButton').at(1).prop('disabled')).toBe(true);
   });
 
   it('click', () => {
