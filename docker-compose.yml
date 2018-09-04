@@ -27,24 +27,15 @@ services:
     volumes:
       - "./app:/mnt"
     container_name: "nodeapp"
-    build: 
-      context: .
-      dockerfile: ./nodeapp/Dockerfile
-      args:
-        - "http_proxy"
-        - "https_proxy"
+    image: node:latest
     env_file: .env
+    command: /sbin/init -D
   nodeapi:
     ports:
       - "4000:3000"
     volumes:
       - "./api:/mnt"
     container_name: "nodeapi"
-    build: 
-      context: .
-      dockerfile: ./nodeapp/Dockerfile
-      args:
-        - "http_proxy"
-        - "https_proxy"
+    image: node:latest
     command: /sbin/init -D
     env_file: .env
